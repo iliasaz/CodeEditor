@@ -49,7 +49,8 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
               flags       : CodeEditor.Flags,
               indentStyle : CodeEditor.IndentStyle,
               autoPairs   : [ String : String ],
-              inset       : CGSize)
+              inset       : CGSize,
+              selectionRange: Binding<Range<String.Index>>? = nil)
   {
     self.source      = source
     self.fontSize    = fontSize
@@ -59,6 +60,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     self.indentStyle = indentStyle
     self.autoPairs   = autoPairs
     self.inset       = inset
+    self.selectionRange = selectionRange
   }
     
   private var source      : Binding<String>
@@ -69,6 +71,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
   private let indentStyle : CodeEditor.IndentStyle
   private let inset       : CGSize
   private let autoPairs   : [ String : String ]
+  private var selectionRange: Binding<Range<String.Index>>?
   
   
   // MARK: - TextView Delegate  Coordinator
@@ -98,6 +101,14 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       return parent.flags.contains(.selectable)
           || parent.flags.contains(.editable)
     }
+      
+      public func textViewDidChangeSelection(_ notification: Notification) {
+          guard let textView = notification.object as? UXCodeTextView else {
+            assertionFailure("unexpected notification object")
+            return
+          }
+          parent.selectionRange?.wrappedValue = textView.swiftSelectedRange
+      }
   }
     
   public func makeCoordinator() -> Coordinator {
@@ -143,7 +154,9 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       let scrollView = NSScrollView()
       scrollView.hasVerticalScroller = true
       scrollView.documentView = textView
-      
+      textView.gutterBackgroundColor = .unemphasizedSelectedContentBackgroundColor
+      textView.gutterForegroundColor = .controlTextColor
+      textView.awakeFromNib()
       updateTextView(textView)
       return scrollView
     }

@@ -200,6 +200,7 @@ public struct CodeEditor: View {
    *                  language is used.
    *   - inset:       The editor can be inset in the scroll view. Defaults to
    *                  8/8.
+   *   - selectionRange: A binding to selected text or cursor position
    */
   public init(source      : Binding<String>,
               language    : Language?            = nil,
@@ -208,7 +209,8 @@ public struct CodeEditor: View {
               flags       : Flags                = .defaultEditorFlags,
               indentStyle : IndentStyle          = .system,
               autoPairs   : [ String : String ]? = nil,
-              inset       : CGSize?              = nil)
+              inset       : CGSize?              = nil,
+              selectionRange: Binding<Range<String.Index>>? = nil)
   {
     self.source      = source
     self.fontSize    = fontSize
@@ -220,6 +222,7 @@ public struct CodeEditor: View {
     self.autoPairs   = autoPairs
                     ?? language.flatMap({ CodeEditor.defaultAutoPairs[$0] })
                     ?? [:]
+    self.selectionRange = selectionRange
   }
   
   /**
@@ -275,6 +278,7 @@ public struct CodeEditor: View {
   private let indentStyle : IndentStyle
   private let autoPairs   : [ String : String ]
   private let inset       : CGSize
+  private var selectionRange: Binding<Range<String.Index>>?
 
   public var body: some View {
     UXCodeTextViewRepresentable(source      : source,
@@ -284,7 +288,8 @@ public struct CodeEditor: View {
                                 flags       : flags,
                                 indentStyle : indentStyle,
                                 autoPairs   : autoPairs,
-                                inset       : inset)
+                                inset       : inset,
+                                selectionRange: selectionRange)
   }
 }
 
