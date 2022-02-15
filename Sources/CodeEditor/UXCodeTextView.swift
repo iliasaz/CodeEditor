@@ -63,7 +63,6 @@ final class UXCodeTextView: UXTextView {
   }
   
   init() {
-    
     let textStorage = highlightr.flatMap {
                         CodeAttributedString(highlightr: $0)
                       }
@@ -77,7 +76,6 @@ final class UXCodeTextView: UXTextView {
     layoutManager.addTextContainer(textContainer)
     
     super.init(frame: .zero, textContainer: textContainer)
-
   
     #if os(macOS)
       isVerticallyResizable = true
@@ -266,8 +264,8 @@ protocol UXCodeTextViewDelegate: UXTextViewDelegate {
 // MARK: - Smarts as shown in https://github.com/naoty/NTYSmartTextView
 
 extension UXTextView {
-    
-    public var swiftSelectedRange : Range<String.Index> {
+  
+  var swiftSelectedRange : Range<String.Index> {
     let s = self.string
     guard !s.isEmpty else { return s.startIndex..<s.startIndex }
     #if os(macOS)
