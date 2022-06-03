@@ -100,6 +100,11 @@ final class UXCodeTextView: UXTextView {
   // MARK: - Actions
 
   #if os(macOS)
+    override func changeColor(_ sender: Any?) {
+      // https://github.com/ZeeZide/CodeEditor/issues/12
+      // Reject user based color changes.
+    }
+  
     override func changeFont(_ sender: Any?) {
       let coordinator = delegate as? UXCodeTextViewDelegate
       
@@ -143,11 +148,20 @@ final class UXCodeTextView: UXTextView {
     if coordinator.allowCopy { super.copy(sender) }
   }
   
-  
+  private var isAutoPairEnabled : Bool { return !autoPairCompletion.isEmpty }
+
+  #if os(iOS)
+    override func insertText(_ text: String) {
+        super.insertText(text)
+        guard isAutoPairEnabled              else { return }       
+        guard let end = autoPairCompletion[text] else { return }
+        let prev = self.selectedRange
+        super.insertText(end)
+        self.selectedRange = prev
+    }
+  #endif
   #if os(macOS)
     // MARK: - Smarts as shown in https://github.com/naoty/NTYSmartTextView
-    
-    private var isAutoPairEnabled : Bool { return !autoPairCompletion.isEmpty }
     
     override func insertNewline(_ sender: Any?) {
       guard isSmartIndentEnabled else { return super.insertNewline(sender) }
