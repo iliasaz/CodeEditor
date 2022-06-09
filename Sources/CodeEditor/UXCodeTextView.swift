@@ -28,7 +28,7 @@ import Highlightr
  * Currently pretty tightly coupled to `CodeEditor`.
  */
 final class UXCodeTextView: UXTextView {
-  
+    
   fileprivate let highlightr = Highlightr()
   
   private var hlTextStorage : CodeAttributedString? {
