@@ -209,9 +209,11 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     
     if let selection = selection {
       let range = selection.wrappedValue
-      
-      if range != textView.swiftSelectedRange {
-        let nsrange = NSRange(range, in: textView.string)
+      let nsrange = NSRange(selection.wrappedValue, in: textView.string)
+      let actuallySelectedRange = textView.swiftSelectedRange
+
+        if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
+
         #if os(macOS)
           textView.setSelectedRange(nsrange)
         #elseif os(iOS)
@@ -238,12 +240,19 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       textView.allowsUndo         = true
       textView.textContainerInset = inset
       textView.usesFindBar = true
+      textView.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+      textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+      textView.textContainer?.widthTracksTextView = false
+      textView.isHorizontallyResizable = true
 
+      
       let scrollView = NSScrollView()
       scrollView.hasVerticalScroller = true
+      scrollView.hasHorizontalScroller = true
       scrollView.documentView = textView
-      textView.gutterBackgroundColor = .unemphasizedSelectedContentBackgroundColor
-      textView.gutterForegroundColor = .controlTextColor
+      textView.gutterBackgroundColor = .unemphasizedSelectedTextBackgroundColor
+      textView.gutterForegroundColor = .disabledControlTextColor
+        
       textView.awakeFromNib()
       updateTextView(textView)
       return scrollView

@@ -71,7 +71,6 @@ public class LineNumberTextView: NSTextView {
         scrollView.hasHorizontalRuler = false
         scrollView.hasVerticalRuler   = true
         scrollView.rulersVisible      = true
-
         self.addObservers()
     }
 
@@ -89,4 +88,71 @@ public class LineNumberTextView: NSTextView {
             lineNumberGutter.needsDisplay = true
         }
     }
+    
+    override public var drawsBackground: Bool {
+        set {} // always return false, we'll draw the background
+        get { return false }
+    }
+
+    var selectedLineRect: NSRect? {
+        guard let layout = layoutManager, let container = textContainer else { return nil }
+        if selectedRange().length > 0 { return nil }
+        return layout.boundingRect(forGlyphRange: selectedRange(), in: container)
+    }
+
+    override public func draw(_ dirtyRect: NSRect) {
+        guard let context = NSGraphicsContext.current?.cgContext else { return }
+        context.setFillColor(backgroundColor.cgColor)
+        context.fill(dirtyRect)
+
+        if let textRect = selectedLineRect {
+            let lineRect = NSRect(x: 0, y: textRect.origin.y + textRect.height/2.0, width: self.frame.width, height: textRect.height)
+            context.setFillColor(NSColor(calibratedRed: 236.0/255.0, green: 244.0/255.0, blue: 255.0/255.0, alpha: 1).cgColor)
+            context.fill(lineRect)
+        }
+
+        super.draw(dirtyRect)
+
+    }
+
+    var highlightingDelegate: LineHighlightingTextViewDelegate?
+
+    var currentLineColor: NSColor = NSColor(calibratedRed: 0.96, green: 0.96, blue: 0.97, alpha: 1)
+
+    var selectionColor: NSColor {
+        get { return selectedTextAttributes[NSAttributedString.Key.backgroundColor] as! NSColor }
+        set { selectedTextAttributes[NSAttributedString.Key.backgroundColor] = newValue }
+    }
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        setup()
+    }
+
+    override init(frame frameRect: NSRect, textContainer container: NSTextContainer?) {
+        super.init(frame: frameRect, textContainer: container)
+        setup()
+    }
+
+    private func setup() {
+        selectionColor = NSColor(calibratedRed: 0.69, green: 0.84, blue: 1.0, alpha: 1.0)
+    }
+
+    required public init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override public func setSelectedRange(_ charRange: NSRange, affinity: NSSelectionAffinity, stillSelecting stillSelectingFlag: Bool) {
+        super.setSelectedRange(charRange, affinity: affinity, stillSelecting: stillSelectingFlag)
+        needsDisplay = true
+        highlightingDelegate?.selectionNeedsDisplay()
+    }
 }
+
+
+protocol LineHighlightingTextViewDelegate {
+    func selectionNeedsDisplay()
+}
+
+
+

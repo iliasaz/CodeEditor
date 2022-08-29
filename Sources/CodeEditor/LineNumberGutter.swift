@@ -26,9 +26,20 @@
 // THE SOFTWARE.
 
 import Cocoa
+import os
+
+extension Logger {
+    static var subsystem = Bundle.main.bundleIdentifier!
+    
+    /// Logs the view cycles like viewDidLoad.
+    var codeeditor: Logger { Logger(subsystem: Logger.subsystem, category: "codeeditor") }
+    var `default`: Logger { Logger(subsystem: Logger.subsystem, category: "default") }
+}
+
+fileprivate let log = Logger().codeeditor
 
 /// Defines the width of the gutter view.
-private let GUTTER_WIDTH: CGFloat = 40.0
+private let GUTTER_WIDTH: CGFloat = 50.0
 
 
 /// Adds line numbers to a NSTextField.
@@ -95,7 +106,8 @@ class LineNumberGutter: NSRulerView {
         self.backgroundColor.set()
         // ...and fill the given rect.
         rect.fill()
-
+        
+//        log.debug("in drawHashMarksAndLabels")
         // Unwrap the clientView, the layoutManager and the textContainer, since we'll
         // them sooner or later.
         guard let textView      = self.clientView as? NSTextView,
@@ -109,7 +121,8 @@ class LineNumberGutter: NSRulerView {
 
         // Get the range of the currently visible glyphs.
         let visibleGlyphsRange = layoutManager.glyphRange(forBoundingRect: textView.visibleRect, in: textContainer)
-
+//        log.debug("in drawHashMarksAndLabels - visibleGlyphsRange: \(visibleGlyphsRange)")
+        
         // Check how many lines are out of the current bounding rect.
         var lineNumber: Int = 1
         do {
@@ -119,6 +132,7 @@ class LineNumberGutter: NSRulerView {
             // to the first glyph in the visible rect.
             lineNumber += newlineRegex.numberOfMatches(in: content, options: [], range: NSMakeRange(0, visibleGlyphsRange.location))
         } catch {
+            log.debug("in drawHashMarksAndLabels - caught exception in regex")
             return
         }
 
@@ -135,39 +149,49 @@ class LineNumberGutter: NSRulerView {
             var firstGlyphOfRowIndex = firstGlyphOfLineIndex
             var lineWrapCount        = 0
 
-            // Loop through all rows (soft wraps) of the current line.
-            while firstGlyphOfRowIndex < NSMaxRange(glyphRangeOfLine) {
-                // The effective range of glyphs within the current line.
-                var effectiveRange = NSRange(location: 0, length: 0)
-                // Get the rect for the current line fragment.
-                let lineRect = layoutManager.lineFragmentRect(forGlyphAt: firstGlyphOfRowIndex, effectiveRange: &effectiveRange, withoutAdditionalLayout: true)
-
-                // Draw the current line number;
-                // When lineWrapCount > 0 the current line spans multiple rows.
-                if lineWrapCount == 0 {
-                    self.drawLineNumber(num: lineNumber, atYPosition: lineRect.minY)
-                } else {
-                    break
-                }
-
-                // Move to the next row.
-                firstGlyphOfRowIndex = NSMaxRange(effectiveRange)
-                lineWrapCount+=1
-            }
-
+//             Loop through all rows (soft wraps) of the current line.
+//            while firstGlyphOfRowIndex < NSMaxRange(glyphRangeOfLine) {
+//                // The effective range of glyphs within the current line.
+//                var effectiveRange = NSRange(location: 0, length: 0)
+//                // Get the rect for the current line fragment.
+//                let lineRect = layoutManager.lineFragmentRect(forGlyphAt: firstGlyphOfRowIndex, effectiveRange: &effectiveRange, withoutAdditionalLayout: true)
+//
+//                // Draw the current line number;
+//                // When lineWrapCount > 0 the current line spans multiple rows.
+//                if lineWrapCount == 0 {
+//                    self.drawLineNumber(num: lineNumber, atYPosition: lineRect.minY)
+//                } else {
+//                    break
+//                }
+//
+//                // Move to the next row.
+//                firstGlyphOfRowIndex = NSMaxRange(effectiveRange)
+//                lineWrapCount+=1
+//            }
+            
+            // The effective range of glyphs within the current line.
+            var effectiveRange = NSRange(location: 0, length: 0)
+            // Get the rect for the current line fragment.
+            let lineRect = layoutManager.lineFragmentRect(forGlyphAt: firstGlyphOfLineIndex, effectiveRange: &effectiveRange, withoutAdditionalLayout: true)
+            // Draw the current line number;
+            self.drawLineNumber(num: lineNumber, atYPosition: lineRect.minY)
+            
             // Move to the next line.
             firstGlyphOfLineIndex = NSMaxRange(glyphRangeOfLine)
             lineNumber+=1
         }
 
+//        log.debug("in drawHashMarksAndLabels - about to draw an extra line number")
         // Draw another line number for the extra line fragment.
         if let _ = layoutManager.extraLineFragmentTextContainer {
             self.drawLineNumber(num: lineNumber, atYPosition: layoutManager.extraLineFragmentRect.minY)
         }
+        self.needsDisplay = true
     }
 
 
     func drawLineNumber(num: Int, atYPosition yPos: CGFloat) {
+//        log.debug("in drawHashMarksAndLabels - drawing a line number \(num) at ypos: \(yPos)")
         // Unwrap the text view.
         guard let textView = self.clientView as? NSTextView,
               let font     = textView.font else {
@@ -182,6 +206,6 @@ class LineNumberGutter: NSRulerView {
         // Calculate the x position, within the gutter.
         let xPosition        = GUTTER_WIDTH - (attributedString.size().width + 5)
         // Draw the attributed string to the calculated point.
-        attributedString.draw(at: NSPoint(x: xPosition, y: relativePoint.y + yPos))
+        attributedString.draw(at: NSPoint(x: xPosition, y: relativePoint.y + yPos + 8))
     }
 }

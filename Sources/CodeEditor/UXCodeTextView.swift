@@ -96,7 +96,6 @@ final class UXCodeTextView: UXTextView {
     fatalError("init(coder:) has not been implemented")
   }
   
-  
   // MARK: - Actions
 
   #if os(macOS)
@@ -186,6 +185,8 @@ final class UXCodeTextView: UXTextView {
       super.insertText(String(repeating: " ", count: width),
                        replacementRange: selectedRange())
     }
+    
+
   
     override func insertText(_ string: Any, replacementRange: NSRange) {
       super.insertText(string, replacementRange: replacementRange)
@@ -340,3 +341,6 @@ extension UXTextView {
     var codeTextStorage : NSTextStorage? { return textStorage }
   }
 #endif // iOS
+
+
+
