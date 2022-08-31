@@ -247,7 +247,8 @@ final class UXCodeTextView: UXTextView {
     guard let highlightr = highlightr,
           highlightr.setTheme(to: newTheme.rawValue),
           let theme      = highlightr.theme else { return false }
-    self.backgroundColor = theme.themeBackgroundColor
+      // let OS decide on the background based on current dark/light appearance
+      // self.backgroundColor = theme.themeBackgroundColor
     if let font = theme.codeFont, font !== self.font { self.font = font }
     return true
   }
@@ -266,7 +267,8 @@ final class UXCodeTextView: UXTextView {
     theme.codeFont       = theme.codeFont?      .withSize(newSize)
     theme.boldCodeFont   = theme.boldCodeFont?  .withSize(newSize)
     theme.italicCodeFont = theme.italicCodeFont?.withSize(newSize)
-    self.backgroundColor = theme.themeBackgroundColor
+      // let OS decide on the background based on current dark/light appearance
+      // self.backgroundColor = theme.themeBackgroundColor
     if let font = theme.codeFont, font !== self.font { self.font = font }
     return true
   }
