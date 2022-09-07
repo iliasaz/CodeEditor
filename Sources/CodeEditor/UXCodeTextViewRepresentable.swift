@@ -235,7 +235,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
   #if os(macOS)
     public func makeNSView(context: Context) -> NSScrollView {
       let textView = UXCodeTextView()
-      textView.autoresizingMask   = [ .width, .height ]
+      textView.autoresizingMask   = [ .height ]
       textView.delegate           = context.coordinator
       textView.allowsUndo         = true
       textView.textContainerInset = inset
@@ -253,6 +253,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       textView.gutterBackgroundColor = .unemphasizedSelectedTextBackgroundColor
       textView.gutterForegroundColor = .disabledControlTextColor
         
+    
       textView.awakeFromNib()
       updateTextView(textView)
       return scrollView
