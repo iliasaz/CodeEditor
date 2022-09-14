@@ -183,15 +183,16 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     defer {
       isCurrentlyUpdatingView.value = false
     }
-      
     if let binding = fontSize {
       textView.applyNewTheme(themeName, andFontSize: binding.wrappedValue)
     }
     else {
       textView.applyNewTheme(themeName)
     }
-    textView.language = language
-    
+      if let language = language, textView.language != language {
+          textView.language = language
+      }
+      
     textView.indentStyle          = indentStyle
     textView.isSmartIndentEnabled = flags.contains(.smartIndent)
     textView.autoPairCompletion   = autoPairs
@@ -213,7 +214,6 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       let actuallySelectedRange = textView.swiftSelectedRange
 
         if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
-
         #if os(macOS)
           textView.setSelectedRange(nsrange)
         #elseif os(iOS)

@@ -55,12 +55,13 @@ final class UXCodeTextView: UXTextView {
     }
     get { return hlTextStorage?.language.flatMap(CodeEditor.Language.init) }
   }
-  private(set) var themeName = CodeEditor.ThemeName.default {
-    didSet {
-      highlightr?.setTheme(to: themeName.rawValue)
-      if let font = highlightr?.theme?.codeFont { self.font = font }
-    }
-  }
+  private(set) var themeName = CodeEditor.ThemeName.default
+//{
+//    didSet {
+//      highlightr?.setTheme(to: themeName.rawValue)
+//      if let font = highlightr?.theme?.codeFont { self.font = font }
+//    }
+//  }
   
   init() {
     let textStorage = highlightr.flatMap {
@@ -243,13 +244,14 @@ final class UXCodeTextView: UXTextView {
   
   @discardableResult
   func applyNewTheme(_ newTheme: CodeEditor.ThemeName) -> Bool {
-    guard themeName != newTheme else { return false }
+      guard themeName != newTheme else { return false }
     guard let highlightr = highlightr,
           highlightr.setTheme(to: newTheme.rawValue),
           let theme      = highlightr.theme else { return false }
       // let OS decide on the background based on current dark/light appearance
-      // self.backgroundColor = theme.themeBackgroundColor
+//       self.backgroundColor = theme.themeBackgroundColor
     if let font = theme.codeFont, font !== self.font { self.font = font }
+    themeName = newTheme
     return true
   }
 
@@ -270,6 +272,7 @@ final class UXCodeTextView: UXTextView {
       // let OS decide on the background based on current dark/light appearance
       // self.backgroundColor = theme.themeBackgroundColor
     if let font = theme.codeFont, font !== self.font { self.font = font }
+    if let newTheme = newTheme { themeName = newTheme }
     return true
   }
 }
