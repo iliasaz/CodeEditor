@@ -110,9 +110,10 @@ public class LineNumberTextView: NSTextView {
             context.setFillColor(NSColor(calibratedRed: 236.0/255.0, green: 244.0/255.0, blue: 255.0/255.0, alpha: 1).cgColor)
             context.fill(lineRect)
         }
-
+        if let lineNumberGutter = self.lineNumberGutter {
+            lineNumberGutter.needsDisplay = true
+        }
         super.draw(dirtyRect)
-
     }
 
     var highlightingDelegate: LineHighlightingTextViewDelegate?

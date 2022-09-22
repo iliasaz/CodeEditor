@@ -197,16 +197,16 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     textView.isSmartIndentEnabled = flags.contains(.smartIndent)
     textView.autoPairCompletion   = autoPairs
 
-//    if source.wrappedValue != textView.string {
-//      if let textStorage = textView.codeTextStorage {
-//        textStorage.replaceCharacters(in   : NSMakeRange(0, textStorage.length),
-//                                      with : source.wrappedValue)
-//      }
-//      else {
-//        assertionFailure("no text storage?")
-//        textView.string = source.wrappedValue
-//      }
-//    }
+    if source.wrappedValue != textView.string {
+      if let textStorage = textView.codeTextStorage {
+        textStorage.replaceCharacters(in   : NSMakeRange(0, textStorage.length),
+                                      with : source.wrappedValue)
+      }
+      else {
+        assertionFailure("no text storage?")
+        textView.string = source.wrappedValue
+      }
+    }
     
     if let selection = selection {
       let range = selection.wrappedValue

@@ -71,6 +71,7 @@ final class UXCodeTextView: UXTextView {
         
         let textStorage = CodeAttributedString(highlightr: highlightr!)
         let layoutManager = NSLayoutManager()
+        layoutManager.backgroundLayoutEnabled = true
         textStorage.addLayoutManager(layoutManager)
         
         let textContainer = NSTextContainer()
