@@ -190,6 +190,50 @@ final class UXCodeTextView: UXTextView {
     }
     
     
+    override public func keyDown(with event: NSEvent) {
+        if event.keyCode == 44 && event.modifierFlags.contains(.command) {
+            applyComment()
+        } else {
+            super.keyDown(with: event)
+        }
+    }
+    
+    func applyComment() {
+        var selectionFirstLineStart = self.string.startIndex, selectionLastLineEnd = self.string.endIndex, endContent = self.string.endIndex
+        self.string.getLineStart(&selectionFirstLineStart, end: &selectionLastLineEnd, contentsEnd: &endContent, for: swiftSelectedRange)
+        var lineStart = selectionFirstLineStart
+        while lineStart <= swiftSelectedRange.upperBound {
+            if self.string.distance(from: lineStart, to: endContent) < 2 || String(self.string[lineStart..<self.string.index(lineStart, offsetBy: 2)]) != "--" {
+                // add comment
+                let currentSelectionRange = self.selectedRange()
+                let currentSwiftSelectionRange = swiftSelectedRange
+                super.insertText("--", replacementRange: NSRange(lineStart..<lineStart, in: self.string))
+                if lineStart <= currentSwiftSelectionRange.lowerBound {
+                    self.setSelectedRange(NSRange(location: currentSelectionRange.location + 2, length: currentSelectionRange.length))
+                } else {
+                    self.setSelectedRange(NSRange(location: currentSelectionRange.location, length: currentSelectionRange.length + 2))
+                }
+            } else { // remove comment if present
+                if String(self.string[lineStart..<self.string.index(lineStart, offsetBy: 2)]) == "--" {
+                    let currentSelectionRange = self.selectedRange()
+                    let currentSwiftSelectionRange = swiftSelectedRange
+                    self.setSelectedRange(NSRange(lineStart..<self.string.index(lineStart, offsetBy: 2), in: self.string))
+                    super.deleteForward(self)
+                    if lineStart <= currentSwiftSelectionRange.lowerBound {
+                        self.setSelectedRange(NSRange(location: currentSelectionRange.location - 2, length: currentSelectionRange.length))
+                    } else {
+                        self.setSelectedRange(NSRange(location: currentSelectionRange.location, length: currentSelectionRange.length - 2))
+                    }
+                }
+            }
+            self.string.getLineStart(&selectionFirstLineStart, end: &selectionLastLineEnd, contentsEnd: &endContent, for: swiftSelectedRange)
+            let nl = self.string.range(of: "\n", range: lineStart ..< selectionLastLineEnd) ?? selectionLastLineEnd ..< selectionLastLineEnd
+            if !nl.isEmpty {
+                lineStart = self.string.index(after: nl.lowerBound)
+            } else { break }
+        }
+    }
+    
     
     override func insertText(_ string: Any, replacementRange: NSRange) {
         super.insertText(string, replacementRange: replacementRange)
