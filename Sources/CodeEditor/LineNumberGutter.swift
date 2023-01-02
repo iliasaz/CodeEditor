@@ -102,6 +102,12 @@ class LineNumberGutter: NSRulerView {
     ///
     ///  - parameter rect: NSRect to draw the gutter view in.
     override func drawHashMarksAndLabels(in rect: NSRect) {
+        
+        if #available(macOS 12, *) { // Textkit2 version
+            drawHashMarksAndLabelsTextkit2(in: rect)
+            return
+        }
+        
         // Set the current background color...
         self.backgroundColor.set()
         // ...and fill the given rect.
@@ -207,5 +213,44 @@ class LineNumberGutter: NSRulerView {
         let xPosition        = GUTTER_WIDTH - (attributedString.size().width + 5)
         // Draw the attributed string to the calculated point.
         attributedString.draw(at: NSPoint(x: xPosition, y: relativePoint.y + yPos + 8))
+    }
+    
+    func drawHashMarksAndLabelsTextkit2(in rect: NSRect) {
+        guard let context = NSGraphicsContext.current?.cgContext,
+              let textView = self.clientView as? NSTextView,
+                let textLayoutManager = textView.textLayoutManager
+                else { return }
+
+        let relativePoint = self.convert(NSZeroPoint, from: textView)
+
+        context.saveGState()
+        
+        // Set the current background color and fill
+        self.backgroundColor.set()
+        rect.fill()
+        
+        context.textMatrix = CGAffineTransform(scaleX: 1, y: isFlipped ? -1 : 1)
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: textView.font!,
+            .foregroundColor: NSColor.secondaryLabelColor,
+        ]
+
+        var lineNum = 1
+        textLayoutManager.enumerateTextLayoutFragments(from: nil, options: .ensuresLayout) { fragment in
+            let fragmentFrame = fragment.layoutFragmentFrame
+
+            for (subLineIdx, textLineFragment) in fragment.textLineFragments.enumerated() where subLineIdx == 0 {
+                let locationForFirstCharacter = textLineFragment.locationForCharacter(at: 0)
+                let ctline = CTLineCreateWithAttributedString(CFAttributedStringCreate(nil, "\(lineNum)" as CFString, attributes as CFDictionary))
+                context.textPosition = fragmentFrame.origin.applying(.init(translationX: 4, y: locationForFirstCharacter.y + relativePoint.y + 8))
+                CTLineDraw(ctline, context)
+            }
+
+            lineNum += 1
+            return true
+        }
+        
+        context.restoreGState()
     }
 }

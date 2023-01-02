@@ -136,7 +136,8 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
           assertionFailure("unexpected notification object")
           return
         }
-        
+//          print("selection has changed - \(notification)")
+
         textViewDidChangeSelection(textView: textView as! UXCodeTextView)
       }
     #elseif os(iOS)
@@ -208,25 +209,25 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       }
     }
     
-    if let selection = selection {
-      let range = selection.wrappedValue
-      let nsrange = NSRange(selection.wrappedValue, in: textView.string)
-      let actuallySelectedRange = textView.swiftSelectedRange
-
-        if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
-        #if os(macOS)
-          textView.setSelectedRange(nsrange)
-        #elseif os(iOS)
-          textView.selectedRange = nsrange
-        #else
-          #error("Unsupported OS")
-        #endif
-        
-        if autoscroll {
-          textView.scrollRangeToVisible(nsrange)
-        }
-      }
-    }
+//    if let selection = selection {
+//      let range = selection.wrappedValue
+//      let nsrange = NSRange(selection.wrappedValue, in: textView.string)
+//      let actuallySelectedRange = textView.swiftSelectedRange
+//
+//        if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
+//        #if os(macOS)
+//          textView.setSelectedRange(nsrange)
+//        #elseif os(iOS)
+//          textView.selectedRange = nsrange
+//        #else
+//          #error("Unsupported OS")
+//        #endif
+//        
+//        if autoscroll {
+//          textView.scrollRangeToVisible(nsrange)
+//        }
+//      }
+//    }
     
     textView.isEditable   = flags.contains(.editable)
     textView.isSelectable = flags.contains(.selectable)
@@ -250,7 +251,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       scrollView.hasVerticalScroller = true
       scrollView.hasHorizontalScroller = true
       scrollView.documentView = textView
-      textView.gutterBackgroundColor = .unemphasizedSelectedTextBackgroundColor
+      textView.gutterBackgroundColor = .windowBackgroundColor
       textView.gutterForegroundColor = .disabledControlTextColor
         
     

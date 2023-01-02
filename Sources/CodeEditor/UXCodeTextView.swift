@@ -27,7 +27,7 @@ typealias UXTextViewDelegate  = UITextViewDelegate
  *
  * Currently pretty tightly coupled to `CodeEditor`.
  */
-final class UXCodeTextView: UXTextView {
+final class UXCodeTextView: UXTextView, NSTextContentManagerDelegate, NSTextContentStorageDelegate {
     
     fileprivate let highlightr = Highlightr()
     
@@ -69,16 +69,25 @@ final class UXCodeTextView: UXTextView {
         //                      }
         //                   ?? NSTextStorage()
         
-        let textStorage = CodeAttributedString(highlightr: highlightr!)
-        let layoutManager = NSLayoutManager()
-        layoutManager.backgroundLayoutEnabled = true
-        textStorage.addLayoutManager(layoutManager)
+//        let textStorage = CodeAttributedString(highlightr: highlightr!)
+//        let layoutManager = NSLayoutManager()
+//        layoutManager.backgroundLayoutEnabled = true
+//        textStorage.addLayoutManager(layoutManager)
+//
+//        let textContainer = NSTextContainer()
+//        textContainer.widthTracksTextView  = true // those are key!
+//        layoutManager.addTextContainer(textContainer)
         
+        // Textkit2
+        let textLayoutManager = NSTextLayoutManager()
+        let textContentStorage = NSTextContentStorage()
         let textContainer = NSTextContainer()
-        textContainer.widthTracksTextView  = true // those are key!
-        layoutManager.addTextContainer(textContainer)
         
+        textContentStorage.addTextLayoutManager(textLayoutManager)
+        textLayoutManager.textContainer = textContainer
+        textContentStorage.textStorage = CodeAttributedString(highlightr: highlightr!)
         super.init(frame: .zero, textContainer: textContainer)
+        textContentStorage.delegate = self
         
 #if os(macOS)
         isVerticallyResizable = true
@@ -337,7 +346,10 @@ extension UXTextView {
         let s = self.string
         guard !s.isEmpty else { return s.startIndex..<s.startIndex }
 #if os(macOS)
-        guard let selectedRange = Range(self.selectedRange(), in: s) else {
+//        print("in swiftSelectedRange: \(self.selectedRanges.first!.rangeValue)")
+        guard let selectedRange = Range(self.selectedRanges.first!.rangeValue, in: s) else {
+//        guard let selectedRange = Range(self.selectedRange(), in: s) else {
+//        guard let selectedRange = Range(self.selectedRangeTextkit2, in: s) else {
             assertionFailure("Could not convert the selectedRange?")
             return s.startIndex..<s.startIndex
         }
