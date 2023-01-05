@@ -193,7 +193,7 @@ public class LineNumberTextView: NSTextView {
 //            print("selection: \(nsRange), point: \(point)")
             setSelectedRange(nsRange, affinity: self.selectionAffinity, stillSelecting: false)
         } else { print("if false") }
-        print("range values \(selectedRanges.first?.rangeValue)")
+//        print("range values \(selectedRanges.first?.rangeValue)")
         needsDisplay = true
     }
 }
