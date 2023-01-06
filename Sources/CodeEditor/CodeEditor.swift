@@ -228,6 +228,7 @@ public struct CodeEditor: View {
    *                  8/8.
    *   - autoscroll:  If enabled, the editor automatically scrolls to the respective
    *                  region when the `selection` is changed programatically.
+   *   - wordwrap:    off by default
    */
   public init(source      : Binding<String>,
               selection   : Binding<Range<String.Index>>? = nil,
@@ -238,7 +239,8 @@ public struct CodeEditor: View {
               indentStyle : IndentStyle          = .system,
               autoPairs   : [ String : String ]? = nil,
               inset       : CGSize?              = nil,
-              autoscroll  : Bool                 = true)
+              autoscroll  : Bool                 = true,
+              wordWrap    : Binding<Bool>                 )
   {
     self.source      = source
     self.selection   = selection
@@ -252,6 +254,7 @@ public struct CodeEditor: View {
                     ?? language.flatMap({ CodeEditor.defaultAutoPairs[$0] })
                     ?? [:]
     self.autoscroll = autoscroll
+    self.wordWrap = wordWrap
   }
   
   /**
@@ -296,7 +299,8 @@ public struct CodeEditor: View {
               flags       : flags.subtracting(.editable),
               indentStyle : indentStyle,
               autoPairs   : autoPairs,
-              inset       : inset)
+              inset       : inset,
+              wordWrap: .constant(true))
   }
   
   private var source      : Binding<String>
@@ -309,6 +313,7 @@ public struct CodeEditor: View {
   private let autoPairs   : [ String : String ]
   private let inset       : CGSize
   private let autoscroll  : Bool
+  private var wordWrap    : Binding<Bool>
 
   public var body: some View {
     UXCodeTextViewRepresentable(source      : source,
@@ -320,7 +325,8 @@ public struct CodeEditor: View {
                                 indentStyle : indentStyle,
                                 autoPairs   : autoPairs,
                                 inset       : inset,
-                                autoscroll  : autoscroll)
+                                autoscroll  : autoscroll,
+                                wordWrap    : wordWrap)
   }
 }
 

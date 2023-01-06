@@ -53,7 +53,8 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
               indentStyle : CodeEditor.IndentStyle,
               autoPairs   : [ String : String ],
               inset       : CGSize,
-              autoscroll  : Bool)
+              autoscroll  : Bool,
+              wordWrap    : Binding<Bool>)
   {
     self.source      = source
     self.selection = selection
@@ -65,6 +66,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     self.autoPairs   = autoPairs
     self.inset       = inset
     self.autoscroll = autoscroll
+    self.wordWrap = wordWrap
   }
     
   private var source      : Binding<String>
@@ -77,6 +79,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
   private let inset       : CGSize
   private let autoPairs   : [ String : String ]
   private let autoscroll  : Bool
+  private let wordWrap    : Binding<Bool>
 
   // The inner `value` is true, exactly when execution is inside
   // the `updateTextView(_:)` method. The `Coordinator` can use this
@@ -136,8 +139,6 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
           assertionFailure("unexpected notification object")
           return
         }
-//          print("selection has changed - \(notification)")
-
         textViewDidChangeSelection(textView: textView as! UXCodeTextView)
       }
     #elseif os(iOS)
@@ -209,28 +210,38 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       }
     }
     
-//    if let selection = selection {
-//      let range = selection.wrappedValue
-//      let nsrange = NSRange(selection.wrappedValue, in: textView.string)
-//      let actuallySelectedRange = textView.swiftSelectedRange
-//
-//        if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
-//        #if os(macOS)
-//          textView.setSelectedRange(nsrange)
-//        #elseif os(iOS)
-//          textView.selectedRange = nsrange
-//        #else
-//          #error("Unsupported OS")
-//        #endif
-//        
-//        if autoscroll {
-//          textView.scrollRangeToVisible(nsrange)
-//        }
-//      }
-//    }
+    if let selection = selection {
+      let range = selection.wrappedValue
+      let nsrange = NSRange(selection.wrappedValue, in: textView.string)
+      let actuallySelectedRange = textView.swiftSelectedRange
+
+        if range != actuallySelectedRange && nsrange != NSRange(0..<0) {
+        #if os(macOS)
+          textView.setSelectedRange(nsrange)
+        #elseif os(iOS)
+          textView.selectedRange = nsrange
+        #else
+          #error("Unsupported OS")
+        #endif
+        
+        if autoscroll {
+          textView.scrollRangeToVisible(nsrange)
+        }
+      }
+    }
     
     textView.isEditable   = flags.contains(.editable)
     textView.isSelectable = flags.contains(.selectable)
+      
+      if wordWrap.wrappedValue {
+          let sz = textView.enclosingScrollView?.contentSize ?? NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+          textView.frame = CGRect(x: 0, y: 0, width: sz.width, height: 0)
+          textView.textContainer?.containerSize = NSSize(width: sz.width, height: CGFloat.greatestFiniteMagnitude)
+          textView.textContainer?.widthTracksTextView = true
+      } else {
+          textView.textContainer?.widthTracksTextView = false
+          textView.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+      }
   }
 
   #if os(macOS)
@@ -241,11 +252,8 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       textView.allowsUndo         = true
       textView.textContainerInset = inset
       textView.usesFindBar = true
-      textView.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
       textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-      textView.textContainer?.widthTracksTextView = false
       textView.isHorizontallyResizable = true
-
       
       let scrollView = NSScrollView()
       scrollView.hasVerticalScroller = true
@@ -253,6 +261,16 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       scrollView.documentView = textView
       textView.gutterBackgroundColor = .windowBackgroundColor
       textView.gutterForegroundColor = .disabledControlTextColor
+        
+        if wordWrap.wrappedValue {
+            let sz = scrollView.contentSize
+            textView.frame = CGRect(x: 0, y: 0, width: sz.width, height: 0)
+            textView.textContainer?.containerSize = NSSize(width: sz.width, height: CGFloat.greatestFiniteMagnitude)
+            textView.textContainer?.widthTracksTextView = true
+        } else {
+            textView.textContainer?.widthTracksTextView = false
+            textView.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
+        }
         
     
       textView.awakeFromNib()
@@ -338,7 +356,8 @@ struct UXCodeTextViewRepresentable_Previews: PreviewProvider {
                                 indentStyle : .system,
                                 autoPairs   : [:],
                                 inset       : .init(width: 8, height: 8),
-                                autoscroll  : false)
+                                autoscroll  : false,
+                                wordWrap: .constant(false))
       .frame(width: 200, height: 100)
     
     UXCodeTextViewRepresentable(source: .constant("let a = 5"),
@@ -350,7 +369,8 @@ struct UXCodeTextViewRepresentable_Previews: PreviewProvider {
                                 indentStyle : .system,
                                 autoPairs   : [:],
                                 inset       : .init(width: 8, height: 8),
-                                autoscroll  : false)
+                                autoscroll  : false,
+                                wordWrap: .constant(false))
       .frame(width: 200, height: 100)
     
     UXCodeTextViewRepresentable(
@@ -368,7 +388,8 @@ struct UXCodeTextViewRepresentable_Previews: PreviewProvider {
       indentStyle : .system,
       autoPairs   : [:],
       inset       : .init(width: 8, height: 8),
-      autoscroll  : false
+      autoscroll  : false,
+      wordWrap: .constant(false)
     )
     .frame(width: 540, height: 200)
   }
