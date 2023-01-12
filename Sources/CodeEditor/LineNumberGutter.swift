@@ -231,9 +231,14 @@ class LineNumberGutter: NSRulerView {
         
         context.textMatrix = CGAffineTransform(scaleX: 1, y: isFlipped ? -1 : 1)
 
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .right
+        paragraphStyle.lineSpacing = 2
+        
         let attributes: [NSAttributedString.Key: Any] = [
             .font: textView.font!,
             .foregroundColor: NSColor.secondaryLabelColor,
+            .paragraphStyle: paragraphStyle
         ]
 
         var lineNum = 1
@@ -242,7 +247,8 @@ class LineNumberGutter: NSRulerView {
 
             for (subLineIdx, textLineFragment) in fragment.textLineFragments.enumerated() where subLineIdx == 0 {
                 let locationForFirstCharacter = textLineFragment.locationForCharacter(at: 0)
-                let ctline = CTLineCreateWithAttributedString(CFAttributedStringCreate(nil, "\(lineNum)" as CFString, attributes as CFDictionary))
+                let attributedString = CFAttributedStringCreate(nil, "\(lineNum)".padding(leftTo: 5) as CFString, attributes as CFDictionary)
+                let ctline = CTLineCreateWithAttributedString(attributedString!)
                 context.textPosition = fragmentFrame.origin.applying(.init(translationX: 4, y: locationForFirstCharacter.y + relativePoint.y + 8))
                 CTLineDraw(ctline, context)
             }
@@ -252,5 +258,12 @@ class LineNumberGutter: NSRulerView {
         }
         
         context.restoreGState()
+    }
+}
+
+extension String {
+    func padding(leftTo paddedLength:Int, withPad pad:String=" ", startingAt padStart:Int=0) -> String {
+        let rightPadded = self.padding(toLength:max(count,paddedLength), withPad:pad, startingAt:padStart)
+        return "".padding(toLength:paddedLength, withPad:rightPadded, startingAt:count % paddedLength)
     }
 }

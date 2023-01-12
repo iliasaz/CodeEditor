@@ -243,6 +243,9 @@ final class UXCodeTextView: UXTextView, NSTextContentManagerDelegate, NSTextCont
         }
     }
     
+    public func getTheme() -> Theme? {
+        highlightr?.theme
+    }
     
     override func insertText(_ string: Any, replacementRange: NSRange) {
         super.insertText(string, replacementRange: replacementRange)
@@ -347,10 +350,14 @@ extension UXTextView {
         guard !s.isEmpty else { return s.startIndex..<s.startIndex }
 #if os(macOS)
 //        print("in swiftSelectedRange: \(self.selectedRanges.first!.rangeValue)")
-        guard let selectedRange = Range(self.selectedRanges.first!.rangeValue, in: s) else {
+        guard let firstSelectedRangeValue = self.selectedRanges.first else {
+            assertionFailure("Could not get the first selectedRange")
+            return s.startIndex..<s.startIndex
+        }
+        guard let selectedRange = Range(firstSelectedRangeValue.rangeValue, in: s) else {
 //        guard let selectedRange = Range(self.selectedRange(), in: s) else {
 //        guard let selectedRange = Range(self.selectedRangeTextkit2, in: s) else {
-            assertionFailure("Could not convert the selectedRange?")
+            assertionFailure("Could not convert the selectedRange")
             return s.startIndex..<s.startIndex
         }
 #else

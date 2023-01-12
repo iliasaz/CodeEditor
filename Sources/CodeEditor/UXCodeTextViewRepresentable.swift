@@ -150,6 +150,7 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
     #endif
       
     private func textViewDidChangeSelection(textView: UXCodeTextView) {
+        textView.needsDisplay = true
       // This function may be called as a consequence of updating the selected
       // range in UXCodeTextViewRepresentable/updateTextView(_:)`.
       // Since this function might update the `parent.selection` `Binding`, which in
@@ -254,7 +255,18 @@ struct UXCodeTextViewRepresentable : UXViewRepresentable {
       textView.usesFindBar = true
       textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
       textView.isHorizontallyResizable = true
-      
+      textView.usesFontPanel = false // NSTextView performance: https://christiantietze.de/posts/2021/09/nstextview-fontpanel-slowness/
+        
+        // set default typing font
+        if let theme = textView.getTheme() {
+            textView.typingAttributes = [.font: theme.codeFont as NSFont]
+        }
+        
+        // set a loose paragraph style
+        var paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 2
+        textView.defaultParagraphStyle = paragraphStyle
+        
       let scrollView = NSScrollView()
       scrollView.hasVerticalScroller = true
       scrollView.hasHorizontalScroller = true

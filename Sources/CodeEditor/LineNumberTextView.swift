@@ -129,9 +129,9 @@ public class LineNumberTextView: NSTextView {
             context.setFillColor( currentLineColor.cgColor )
             context.fill(lineRect)
         }
-        if let lineNumberGutter = self.lineNumberGutter {
-            lineNumberGutter.needsDisplay = true
-        }
+//        if let lineNumberGutter = self.lineNumberGutter {
+//            lineNumberGutter.needsDisplay = true
+//        }
         super.draw(dirtyRect)
     }
     
