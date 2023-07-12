@@ -36,3 +36,4 @@ public extension CodeEditor.ThemeName {
   static var atelierSavannaLight = CodeEditor.ThemeName(rawValue: "atelier-savanna-light")
   static var atelierSavannaDark  = CodeEditor.ThemeName(rawValue: "atelier-savanna-dark")
 }
+
